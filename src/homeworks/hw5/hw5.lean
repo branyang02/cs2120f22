@@ -30,7 +30,6 @@ begin
   exact rfl,
 end
 
-
 /- #1B.
 State and prove the proposition that there is 
 some string, s, such that s ++ "!" is the string, 
@@ -39,7 +38,11 @@ for string.append, the function for gluing two
 strings together into one.
 -/
 
-example : _ := _
+example : ∃ (s : string), s ++ "!" = "I love logic!"  :=  
+begin
+  apply exists.intro "I love logic",
+  exact rfl,
+end
 
 /- #1C.
 
@@ -50,8 +53,12 @@ takes just one witness as a time, so you will
 have to apply it more than once.
 -/
 
-example : _ :=
+example : ∃ (x y z: ℕ), x*x+y*y = z*z :=
 begin
+  apply exists.intro 3,
+  apply exists.intro 4,
+  apply exists.intro 5,
+  exact rfl,
 end
 
 /- #1D
@@ -60,7 +67,7 @@ three natural number arguments, x, y, and z,
 yielding the proposition that x*x + y*y = z*z.
 -/
 
-def pythag_triple (x y z : ℕ) := _
+def pythag_triple (x y z : ℕ) := x*x + y*y = z*z
 
 /- #1E
 State the propositionthat there exist x, y, z, 
@@ -68,9 +75,13 @@ natural numbers, that satisfy the pythag_triple,
 predicate, then prove it. (Use "example : ...")
 -/
 
-example : _  :=
+example : ∃ (x y z : ℕ), pythag_triple x y z :=
 begin
-_
+  unfold pythag_triple,
+  apply exists.intro 3,
+  apply exists.intro 4,
+  apply exists.intro 5,
+  exact rfl,
 end
 
 /- #2A
@@ -189,9 +200,16 @@ has to be. Also, be sure to use multiple_of in
 formally stating the proposition to be proved.
 -/
 
-example : _ :=
+example : ∀ (n : ℕ), multiple_of n 6 → multiple_of n 3:=
 begin
-_
+  assume n,
+  assume mult6,
+  unfold multiple_of,
+  unfold multiple_of at mult6,
+  cases mult6 with w pfw,
+  apply exists.intro (2*w),
+  ring,
+  exact pfw,
 end 
 
 
@@ -215,9 +233,17 @@ that you can replace equals by equals without
 changing the truth values of propositions. 
 -/
 
-example (n h k : ℕ) : _ :=
+example (n h k : ℕ) : multiple_of n h → multiple_of h k → multiple_of n k :=
 begin
-_
+  unfold multiple_of,
+  assume multnh,
+  assume multhk,
+  cases multnh with num1 pf1,
+  cases multhk with num2 pf2,
+  apply exists.intro (num1*num2),
+  rw pf1,
+  rw pf2,
+  ring,
 end
 
 
@@ -241,9 +267,12 @@ example
   (isCool : Person → Prop)
   (LogicMakesCool : ∀ (p), KnowsLogic p → isCool p)
   (SomeoneKnowsLogic : ∃ (p), KnowsLogic p) :
-  _ :=
+  ∃ (p : Person), isCool p :=
 begin
-_
+  cases SomeoneKnowsLogic with Ben Benknowslogic,
+  apply exists.intro Ben,
+  apply LogicMakesCool Ben,
+  assumption,
 end
 
 
@@ -256,10 +285,14 @@ someone is not happy then not everyone is happy.
 example 
   (Person : Type)
   (Happy : Person → Prop) :
-  _
+  (∃ (p : Person), ¬Happy p) → ¬(∀(q : Person), Happy q)
   :=
 begin
-  _
+  assume someonenothappy,
+  cases someonenothappy with Eli elinothappy,
+  assume allpeoplehappy,
+  have Eliishappy := allpeoplehappy Eli,
+  contradiction,
 end
 
 /- #3C
@@ -282,8 +315,28 @@ your set of assumptions.
 example 
   (α : Type)
   (P : α → Prop) :
-  _ :=
+  (∀ (p : α), P p) ↔ ¬ (∃ (q : α), ¬(P q)):=
 begin
+  split,
+  {
+    assume everyoneishappy,
+    assume someonneisnothappy,
+    cases someonneisnothappy with Brandon UnhappyBrandon,
+    have HappyBrandon := everyoneishappy Brandon,
+    contradiction,
+  },
+  {
+    assume nooneUnhappy,
+    assume Charlie,
+    cases classical.em (P Charlie) with pCharlie npCharlie,
+    {
+      assumption,
+    },
+    {
+      have f := nooneUnhappy (exists.intro Charlie npCharlie),
+      contradiction,
+    }
+  }
 end 
 
 
@@ -301,9 +354,17 @@ taking objects of that type.
 example 
   (T : Type)
   (P : T → Prop) :
-  _ :=
+  ¬ (∃ (t1 : T), P t1) → (∀ (t2 : T), ¬P t2) :=
 begin
-_
+  assume noobjectwithp,
+  assume Ball,
+  cases classical.em (P Ball) with pball nnpball,
+  {
+    have f := noobjectwithp (exists.intro Ball pball),
+    contradiction,
+  },{
+    exact nnpball,
+  }
 end
 
 
@@ -319,7 +380,14 @@ example
   (α : Type)
   (P : α → Prop)
   (Q : α → Prop): 
-  _ :=
+  (∃ o1 : α, P o1 ∨ Q o1) →  (∃ o2 : α, P o2) ∨ (∃ o3 : α, Q o3 ) :=
 begin
+assume PorQ,
+cases PorQ with Ball PorQBall,
+cases PorQBall with PBall QBall,
+have existsPBall := exists.intro Ball PBall,
+exact or.inl existsPBall,
+have existQBall := exists.intro Ball QBall,
+exact or.inr existQBall,
 end
 
