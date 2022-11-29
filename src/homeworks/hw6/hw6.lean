@@ -21,6 +21,12 @@ n > 0 (i.e., n = n' + 1 = (nat.succ n') for some n').
 
 -- Answer
 
+def isZero (n : ℕ) : bool :=
+  match n with
+  | 0 := tt
+  | _ := ff
+  end
+
 
 -- These test cases should pass except the last 
 example : isZero 0 = tt := rfl
@@ -43,7 +49,7 @@ case where n = n' + 2, it's fib n' + fib n'+1
 def fib : ℕ → ℕ 
 | 0 := 0
 | 1 := 1
-| (n' + 2) := _
+| (n' + 2) := fib (n') + fib (n'+1)
 
 -- These test cases should pass except the last 
 example : fib 0 = 0 := rfl
@@ -70,7 +76,7 @@ one. (That's still the right answer, right!)
 
 def add : ℕ → ℕ → ℕ 
 | n 0 := n
-| n (m' + 1) := _
+| n (m' + 1) := (add n m') + 1
 
 -- These test cases should pass except the last 
 example : add 0 0 = 0 := rfl
@@ -94,7 +100,7 @@ any function, f : α → α.
 -/
 
 def involutive {α : Sort u} (f : α → α) := 
-  _
+  ∀ a:α, f (f a) = a
 
 /-
 Now prove the proposition that the Boolean negation 
@@ -105,6 +111,11 @@ Ask, how can I prove it? Hint: It's just a bool!
 
 example : involutive bnot :=
 begin
+  unfold involutive,
+  assume h,
+  cases h,
+  exact rfl,
+  exact rfl,
 end 
 
 
@@ -123,8 +134,7 @@ your answer. Remember: Predicates take values
 to propositions. 
 -/
 
-def perfectSquare (n : ℕ) : Prop := _
-
+def perfectSquare (n : ℕ) : Prop := ∃ (m : ℕ), m * m = n
 
 /- B [5 points].
 
@@ -133,7 +143,7 @@ set comprehension (set builder) notation and
 the perfectSquare predicate.
 -/
 
-def perfectSquares : set ℕ := _
+def perfectSquares : set ℕ := { n : ℕ | perfectSquare n }
 
 
 /- C [5 point].
@@ -144,8 +154,12 @@ notation in writing your proposition.
 -/
 
 
-example : _ :=
+example : 25 ∈ perfectSquares :=
 begin
+  unfold perfectSquares,
+  unfold perfectSquare,
+  apply exists.intro 5,
+  exact rfl,
 end
 
 
@@ -171,14 +185,26 @@ using set and set operator notations.
 
 
 -- 1. intersection
-example : _ :=
+example : 4 ∈ (X ∩ Y) :=
 begin
-_
+  unfold X,
+  unfold Y,
+  split,
+  right,
+  right,
+  exact rfl,
+  left,
+  exact rfl,
 end
 
 -- 2. union
-example : _ :=
+example : 4 ∈ (X ∪ Y) :=
 begin
+  unfold X,
+  left,
+  right,
+  right,
+  exact rfl,
 end
 
 
@@ -201,16 +227,24 @@ goal and proceed accordingly.
 -/
 
 -- 3. difference
-example : _ :=
+example : 4 ∉ (X\Y) :=
 begin
-_
+  unfold X Y,
+  assume h,
+  cases h,
+  let n : 4 ∈ {4, 5, 6} := _,
+  contradiction,
+  left,
+  exact rfl,
 end
 
 
 -- 4. complement
-example : _ :=
+example : 10 ∈ Xᶜ :=
 begin
-_
+  unfold X,
+  assume h,
+  repeat {cases h},
 end 
 
 
@@ -239,7 +273,7 @@ in the rest!
 def single_valued   -- predicate on relations
 {α β : Type} 
 (r : α → β → Prop) 
-: Prop := _
+: Prop := ∀ x y z, r x y → r x z → y=z
 
 /- Part #2 [5 points]
 
@@ -248,7 +282,7 @@ sq x y is satisfied iff y is the square of x.
 -/
 
 def sqrs : ℕ → ℕ → Prop 
-| x y := _
+| x y := y=x*x
 
 /- Part #3 [5 points] 
 
@@ -258,7 +292,11 @@ sqrs relation is single-valued.
 
 example : single_valued sqrs :=
 begin
-_
+  unfold single_valued,
+  unfold sqrs,
+  assume a b c d e,
+  rw d,
+  rw e,
 end
 
 
@@ -278,7 +316,8 @@ def injective
 (r : α → β → Prop)  -- any relation on α and β 
 (a b : α)           -- any two arbitrary α values
 (x : β) :           -- any β value
-Prop := _
+Prop := 
+r a x → r b x → a=b
 
 
 /- C [10 points].
@@ -299,6 +338,8 @@ example :
       ∃ (b : β), 
         f a = b :=
 begin
-_
+  assume a b c d,
+  apply exists.intro (c d),
+  exact rfl,
 end
 
