@@ -428,7 +428,9 @@ number, n.
 
 def sum_to : ℕ → ℕ 
 | 0 := 0
-| (succ n') := (succ n') + sum_to n'
+| (succ n') := sum_to n' + (succ n')
+-- | 0 := 0
+-- | (succ n') := (succ n') + sum_to n'
 
 example : sum_to 0 = 0 := rfl
 example : sum_to 5 = 15 := rfl
